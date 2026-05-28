@@ -658,3 +658,23 @@ Onboarding ve ayarlarda şu mesajlar mutlaka yer almalı:
 - SSH bağlantı hatası → sunucu kartında ⚠️ göster, sessiz geç
 - Parse hatası → lastValue'yu güncelleme, eski değeri tut
 - Ardışık 3 bağlantı hatası → "Sunucuya ulaşılamıyor" bildirimi gönder
+
+---
+
+## Geliştirici Setup — Güvenlik Hook'u
+
+İlk clone'dan sonra **bir kez** çalıştırılır:
+
+```sh
+./scripts/install-git-hooks.sh
+```
+
+Bu, `.git/hooks/pre-commit` altına `scripts/check-no-secret-logging.sh`'i bağlar. Her `git commit` öncesi şu pattern'ler için Swift kaynaklarını tarar:
+
+- `print(...password...)`, `print(...passValue...)`, `print(...privateKey...)`
+- `print(...KeychainService.load...)`, `print(...rawRepresentation...)`
+- Aynısı `NSLog`, `dump`, `debugPrint` için
+
+Eşleşme bulursa commit iptal olur, dosya+satır numarası raporlanır. Acil durumda `git commit --no-verify` ile bypass edilebilir (ama PR review'da bunu açıklamak gerekir).
+
+Manuel check için: `./scripts/check-no-secret-logging.sh`
