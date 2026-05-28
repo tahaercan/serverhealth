@@ -8,6 +8,24 @@ import WidgetKit
 ///
 /// The app writes this after every MonitoringEngine evaluation (and on rule
 /// add/delete). The widget reads it from its TimelineProvider on every reload.
+///
+/// **⚠️ SECURITY — DO NOT add the following to `ServerSummary`:**
+///   - Raw SSH command outputs (`LogEntry.output`)
+///   - Full error stacks or anything derived from `String(describing: error)`
+///     on SSH internals — Citadel error descriptions may include credentials.
+///   - Anything read from the Keychain (private keys, passwords)
+///   - Per-rule notification message templates if they contain user-typed
+///     secrets
+///
+/// The App Group container is sandbox-accessible to forensics tools and to
+/// any other extension we ship under the same group. Fields here should be
+/// **display-ready, low-sensitivity** (server name, host, simple counts,
+/// timestamps, short status text). When in doubt, expose just enough to
+/// render the widget — nothing more.
+///
+/// If you change this struct, **also update the duplicate in**
+/// `ServerHealthWidget/WidgetSnapshotShared.swift` — the widget extension
+/// can't import from the main app target, so the format is duplicated.
 struct WidgetSnapshot: Codable, Equatable {
 
     /// App Group identifier — must match both the app and widget entitlements.

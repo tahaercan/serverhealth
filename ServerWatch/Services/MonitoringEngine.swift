@@ -76,7 +76,17 @@ struct MonitoringEngine {
 
             let startedAt = Date()
             do {
-                let output = try await ssh.runCommand(wrapped, on: credentials)
+                let result = try await ssh.runCommand(wrapped, on: credentials)
+                let output = result.output
+
+                // TOFU: if this server has no saved fingerprint yet (first
+                // connection ever, or upgraded from a pre-fingerprint build),
+                // pin the one we just observed. Every subsequent connection
+                // verifies against this.
+                if server.hostKeyFingerprint == nil, !result.observedFingerprint.isEmpty {
+                    server.hostKeyFingerprint = result.observedFingerprint
+                }
+
                 let elapsed = Int(Date().timeIntervalSince(startedAt) * 1000)
                 let value = Self.parseDouble(from: output)
 

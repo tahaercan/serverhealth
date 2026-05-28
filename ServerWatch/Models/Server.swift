@@ -15,6 +15,24 @@ final class Server {
     var lastError: String?
     var createdAt: Date
 
+    /// SHA-256 fingerprint of the server's SSH host key, in the format
+    /// `SHA256:<base64-no-padding>` — same shape as `ssh-keygen -l` output.
+    ///
+    /// Captured on the first successful connection (TOFU — Trust On First
+    /// Use). On every subsequent connection, SSHService verifies the live
+    /// host key against this value; a mismatch throws
+    /// `SSHServiceError.hostKeyMismatch` instead of letting the user
+    /// unknowingly talk to a different host.
+    ///
+    /// Nil means "we haven't seen this server's key yet" — the next
+    /// successful connection will populate it. Existing servers from before
+    /// this field existed will be in the nil state and will fingerprint on
+    /// their next monitoring cycle (lenient TOFU).
+    ///
+    /// **Inline default is required for SwiftData lightweight migration** —
+    /// existing rows in the store don't have this column.
+    var hostKeyFingerprint: String? = nil
+
     @Relationship(deleteRule: .cascade, inverse: \MonitoringRule.server)
     var rules: [MonitoringRule] = []
 

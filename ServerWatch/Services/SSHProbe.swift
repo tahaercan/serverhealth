@@ -40,8 +40,13 @@ enum SSHProbe {
         echo "---END---"
         """
 
-        let output = try await SSHService.shared.runCommand(script, on: credentials)
-        let parts = parseDelimited(output)
+        // SSHProbe runs after Server creation (from AddRuleView etc.), so
+        // the saved fingerprint is normally already in `credentials` and
+        // gets verified inside runCommand. If for some reason it's nil
+        // (legacy data), the lenient TOFU path applies — but probe doesn't
+        // own write-back; the next MonitoringEngine.evaluate() will pin it.
+        let result = try await SSHService.shared.runCommand(script, on: credentials)
+        let parts = parseDelimited(result.output)
 
         let distroId   = parts["DISTRO_ID"]?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? "unknown"
         let prettyName = parts["DISTRO_NAME"]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? distroId

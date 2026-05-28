@@ -294,6 +294,10 @@ struct AddServerView: View {
                     username: userValue,
                     keychainKeyId: result.keyId
                 )
+                // Pin the host key fingerprint captured during the
+                // password-auth handshake. All future connections will
+                // verify against this — a mismatch throws hostKeyMismatch.
+                server.hostKeyFingerprint = result.hostKeyFingerprint
                 context.insert(server)
                 try context.save()
 
@@ -340,6 +344,13 @@ struct AddServerView: View {
                     durationMs: elapsed
                 ))
                 try? context.save()
+
+                // Best-effort: clear the password from memory even on failure.
+                // Without this, a failed attempt leaves the user's plaintext
+                // password sitting in @State until they retype or dismiss the
+                // sheet. If the next leak surface (debug print, crash dump,
+                // accessibility export) reads @State, this prevents exposure.
+                password = ""
 
                 errorMessage = error.localizedDescription
                 phase = .form

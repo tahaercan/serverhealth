@@ -46,7 +46,14 @@ enum PackageInstaller {
         let credentials = server.credentials
 
         do {
-            let output = try await SSHService.shared.runCommand(command, on: credentials)
+            let result = try await SSHService.shared.runCommand(command, on: credentials)
+            let output = result.output
+            // Same TOFU write-back as MonitoringEngine — install runs against
+            // a freshly added server may be the first SSH round-trip if the
+            // user goes straight from AddServer → AddRule → Install.
+            if server.hostKeyFingerprint == nil, !result.observedFingerprint.isEmpty {
+                server.hostKeyFingerprint = result.observedFingerprint
+            }
             let elapsed = Int(Date().timeIntervalSince(started) * 1000)
             let succeeded = output.contains("__OK__")
 
