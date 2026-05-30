@@ -27,6 +27,15 @@ struct PaywallView: View {
 
     var isPurchasing: Bool = false
 
+    /// False when StoreKit hasn't loaded the product yet (network, ASC
+    /// propagation delay). Shown in the CTA as a non-tappable state so
+    /// taps aren't silently dropped.
+    var isProductAvailable: Bool = true
+
+    /// Most recent error message from purchase / restore. When non-nil
+    /// the view shows an inline error chip just below the CTA.
+    var errorMessage: String? = nil
+
     var onPurchase: () async -> Void = {}
     var onRestore:  () async -> Void = {}
 
@@ -221,6 +230,9 @@ struct PaywallView: View {
                 Group {
                     if isPurchasing {
                         ProgressView().tint(Color.paywallBase)
+                    } else if !isProductAvailable {
+                        Label("Subscription not available", systemImage: "exclamationmark.triangle.fill")
+                            .font(.subheadline.weight(.semibold))
                     } else {
                         Text("Start Pro")
                             .font(.body.weight(.semibold))
@@ -231,19 +243,44 @@ struct PaywallView: View {
                 .frame(height: 54)
                 .background(
                     LinearGradient(
-                        colors: [Color.paywallGreen, Color.paywallTeal],
+                        colors: isProductAvailable
+                            ? [Color.paywallGreen, Color.paywallTeal]
+                            : [Color.gray, Color.gray.opacity(0.7)],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                .shadow(color: Color.paywallGreen.opacity(0.35), radius: 16, x: 0, y: 6)
+                .shadow(
+                    color: (isProductAvailable ? Color.paywallGreen : .clear).opacity(0.35),
+                    radius: 16, x: 0, y: 6
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(.white.opacity(0.18), lineWidth: 0.5)
                 )
             }
             .disabled(isPurchasing)
+
+            if let errorMessage = errorMessage {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                    Text(errorMessage)
+                        .foregroundStyle(.white.opacity(0.75))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .font(.footnote)
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.orange.opacity(0.10))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.orange.opacity(0.35), lineWidth: 0.5)
+                        )
+                )
+            }
 
             Button {
                 Task { await onRestore() }

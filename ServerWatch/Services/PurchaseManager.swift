@@ -81,10 +81,22 @@ final class PurchaseManager: ObservableObject {
     // MARK: - Purchase flow
 
     func purchase() async {
-        guard let product = product, !isPurchasing else { return }
+        guard !isPurchasing else { return }
         isPurchasing = true
         lastErrorMessage = nil
         defer { isPurchasing = false }
+
+        // If the product isn't loaded yet (slow App Store fetch, or the
+        // user opened the paywall before loadProduct() finished), try once
+        // more. Common after a fresh IAP setup where ASC takes a few minutes
+        // to propagate to sandbox.
+        if product == nil {
+            await loadProduct()
+        }
+        guard let product = product else {
+            lastErrorMessage = String(localized: "Subscription product not available yet. Please try again in a few minutes.")
+            return
+        }
 
         do {
             let result = try await product.purchase()
@@ -109,6 +121,11 @@ final class PurchaseManager: ObservableObject {
             lastErrorMessage = error.localizedDescription
         }
     }
+
+    /// True when we successfully fetched the product from the App Store.
+    /// Used by the paywall to swap the CTA into a "not available" state
+    /// instead of silently doing nothing on tap.
+    var isProductAvailable: Bool { product != nil }
 
     func restore() async {
         lastErrorMessage = nil

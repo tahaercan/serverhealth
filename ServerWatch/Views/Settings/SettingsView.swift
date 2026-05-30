@@ -199,6 +199,8 @@ struct SettingsView: View {
                 priceText: purchaseManager.priceText,
                 monthlyEquivalentText: purchaseManager.monthlyEquivalentText,
                 isPurchasing: purchaseManager.isPurchasing,
+                isProductAvailable: purchaseManager.isProductAvailable,
+                errorMessage: purchaseManager.lastErrorMessage,
                 onPurchase: { await purchaseManager.purchase() },
                 onRestore:  { await purchaseManager.restore() }
             )

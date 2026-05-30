@@ -45,27 +45,35 @@ struct ServerListView: View {
                         .buttonStyle(.borderedProminent)
                     }
                 } else {
-                    List {
-                        ForEach(servers) { server in
-                            NavigationLink(value: server) {
-                                ServerCardView(server: server)
-                            }
-                            .swipeActions(edge: .leading) {
-                                Button {
-                                    renamingServer = server
-                                } label: {
-                                    Label("Rename", systemImage: "pencil")
+                    ZStack {
+                        BrandBackground()
+                        List {
+                            ForEach(servers) { server in
+                                NavigationLink(value: server) {
+                                    ServerCardView(server: server)
                                 }
-                                .tint(.blue)
-                            }
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    pendingDelete = server
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                                .swipeActions(edge: .leading) {
+                                    Button {
+                                        renamingServer = server
+                                    } label: {
+                                        Label("Rename", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
+                                }
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        pendingDelete = server
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
                             }
                         }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
                     }
                 }
             }
@@ -104,6 +112,8 @@ struct ServerListView: View {
                     priceText: purchaseManager.priceText,
                     monthlyEquivalentText: purchaseManager.monthlyEquivalentText,
                     isPurchasing: purchaseManager.isPurchasing,
+                    isProductAvailable: purchaseManager.isProductAvailable,
+                    errorMessage: purchaseManager.lastErrorMessage,
                     onPurchase: { await purchaseManager.purchase() },
                     onRestore:  { await purchaseManager.restore() }
                 )
