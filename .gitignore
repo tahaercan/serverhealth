@@ -8,10 +8,12 @@ xcuserdata/
 *.xcuserstate
 *.xcuserdatad/
 
-# Build output (should never appear inside the repo, but defensive)
+# Build output — Archive + Export + IPA artifacts
 build/
 DerivedData/
 *.xcarchive
+*.ipa
+*.app.dSYM/
 
 # Swift Package Manager (resolved versions are tracked via Xcode's
 # Package.resolved inside .xcodeproj — local checkouts/build are not)

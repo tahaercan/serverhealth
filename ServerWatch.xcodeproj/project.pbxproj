@@ -348,7 +348,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ServerWatch/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = Q92RMNCZLK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
@@ -375,7 +375,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ServerWatch/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = Q92RMNCZLK;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
@@ -401,7 +401,7 @@
 				CODE_SIGN_ENTITLEMENTS = ServerHealthWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = Q92RMNCZLK;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "ServerHealthWidget-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Server Health";
@@ -433,7 +433,7 @@
 				CODE_SIGN_ENTITLEMENTS = ServerHealthWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = Q92RMNCZLK;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "ServerHealthWidget-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Server Health";

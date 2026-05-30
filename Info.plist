@@ -54,5 +54,11 @@
 	<array>
 		<string>com.serverhealth.monitor</string>
 	</array>
+
+	<!-- US export-compliance: we use SSH (standard crypto) which is exempt
+	     under "uses only encryption that's exempted from export regulations".
+	     With this set to false, ASC stops asking on every upload. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
