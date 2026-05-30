@@ -5,10 +5,27 @@ struct ServerListView: View {
 
     @Query(sort: \Server.createdAt) private var servers: [Server]
     @Environment(\.modelContext) private var context
+    @EnvironmentObject private var purchaseManager: PurchaseManager
 
     @State private var showAddSheet = false
     @State private var renamingServer: Server?
     @State private var pendingDelete: Server?
+    @State private var showPaywall = false
+
+    /// Free tier allows exactly one server. Adding a second triggers paywall.
+    private var canAddMoreServers: Bool {
+        purchaseManager.isPro || servers.isEmpty
+    }
+
+    /// Centralized handler for both the "+" toolbar button and the empty-state
+    /// "Add Server" button. Gates behind paywall when at the free limit.
+    private func addServerTapped() {
+        if canAddMoreServers {
+            showAddSheet = true
+        } else {
+            showPaywall = true
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -20,7 +37,7 @@ struct ServerListView: View {
                         Text("Add a server to start monitoring.\nYour password is only used for the initial setup.")
                     } actions: {
                         Button {
-                            showAddSheet = true
+                            addServerTapped()
                         } label: {
                             Label("Add Server", systemImage: "plus")
                                 .font(.body.weight(.semibold))
@@ -68,7 +85,7 @@ struct ServerListView: View {
                 if !servers.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            showAddSheet = true
+                            addServerTapped()
                         } label: {
                             Image(systemName: "plus")
                         }
@@ -81,6 +98,15 @@ struct ServerListView: View {
             }
             .sheet(item: $renamingServer) { server in
                 RenameServerSheet(server: server)
+            }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(
+                    priceText: purchaseManager.priceText,
+                    monthlyEquivalentText: purchaseManager.monthlyEquivalentText,
+                    isPurchasing: purchaseManager.isPurchasing,
+                    onPurchase: { await purchaseManager.purchase() },
+                    onRestore:  { await purchaseManager.restore() }
+                )
             }
             .alert(
                 "Delete server?",

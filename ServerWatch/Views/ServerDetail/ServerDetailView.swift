@@ -5,11 +5,26 @@ struct ServerDetailView: View {
 
     @Bindable var server: Server
     @Environment(\.modelContext) private var context
+    @EnvironmentObject private var purchaseManager: PurchaseManager
 
     @State private var isRefreshing: Bool = false
     @State private var refreshResult: String?
     @State private var showAddRule: Bool = false
     @State private var editingRule: MonitoringRule?
+    @State private var showPaywall: Bool = false
+
+    /// Free tier allows 3 rules per server. The 4th attempt opens the paywall.
+    private var canAddMoreRules: Bool {
+        purchaseManager.isPro || server.rules.count < 3
+    }
+
+    private func addRuleTapped() {
+        if canAddMoreRules {
+            showAddRule = true
+        } else {
+            showPaywall = true
+        }
+    }
     @State private var historyCheckType: HistoryParam?
 
     /// Identifiable wrapper so `.sheet(item:)` can drive history presentation
@@ -78,7 +93,7 @@ struct ServerDetailView: View {
                 }
 
                 Button {
-                    showAddRule = true
+                    addRuleTapped()
                 } label: {
                     Label("Add Rule", systemImage: "plus.circle")
                 }
@@ -124,6 +139,15 @@ struct ServerDetailView: View {
         }
         .sheet(item: $historyCheckType) { param in
             MetricHistoryView(server: server, checkType: param.checkType)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(
+                priceText: purchaseManager.priceText,
+                monthlyEquivalentText: purchaseManager.monthlyEquivalentText,
+                isPurchasing: purchaseManager.isPurchasing,
+                onPurchase: { await purchaseManager.purchase() },
+                onRestore:  { await purchaseManager.restore() }
+            )
         }
     }
 

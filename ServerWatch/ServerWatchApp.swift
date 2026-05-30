@@ -54,9 +54,12 @@ struct ServerWatchApp: App {
         }
     }
 
+    @StateObject private var purchaseManager = PurchaseManager()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(purchaseManager)
                 .task {
                     // Install the foreground notification delegate so iOS shows
                     // banners even while the app is open.
@@ -70,6 +73,10 @@ struct ServerWatchApp: App {
                     }
                     // Schedule the periodic background monitor on every launch.
                     BackgroundMonitorTask.schedule()
+                    // Load the Pro subscription product + check current
+                    // entitlement so the gating and paywall have data ready
+                    // by the time the user might hit them.
+                    await purchaseManager.loadProduct()
                 }
         }
         .modelContainer(Self.modelContainer)

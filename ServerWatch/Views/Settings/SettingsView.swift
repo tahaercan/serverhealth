@@ -5,9 +5,11 @@ import UIKit
 struct SettingsView: View {
 
     @ObservedObject private var languageManager = LanguageManager.shared
+    @EnvironmentObject private var purchaseManager: PurchaseManager
     @State private var pickedCode: String
     @State private var notifStatus: UNAuthorizationStatus = .notDetermined
     @State private var showOnboarding: Bool = false
+    @State private var showPaywall: Bool = false
 
     init() {
         _pickedCode = State(initialValue: LanguageManager.shared.override)
@@ -23,6 +25,52 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            // MARK: - Pro subscription
+            Section {
+                Button {
+                    showPaywall = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: purchaseManager.isPro ? "checkmark.seal.fill" : "sparkles")
+                            .font(.title3)
+                            .foregroundStyle(purchaseManager.isPro ? .green : .blue)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(purchaseManager.isPro ? "Server Health Pro" : "Upgrade to Pro")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(.primary)
+                            Text(purchaseManager.isPro
+                                 ? "Active subscription — thank you!"
+                                 : "Unlock unlimited servers and rules")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer(minLength: 0)
+                        if !purchaseManager.isPro {
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+                if !purchaseManager.isPro {
+                    Button {
+                        Task { await purchaseManager.restore() }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                            Text("Restore Purchases")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(.primary)
+                            Spacer()
+                        }
+                    }
+                }
+            } header: {
+                Text("Subscription")
+            }
+
             Section {
                 Picker("App Language", selection: $pickedCode) {
                     Text("System").tag("")
@@ -145,6 +193,15 @@ struct SettingsView: View {
             NavigationStack {
                 OnboardingView(isPresentedFromSettings: true)
             }
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(
+                priceText: purchaseManager.priceText,
+                monthlyEquivalentText: purchaseManager.monthlyEquivalentText,
+                isPurchasing: purchaseManager.isPurchasing,
+                onPurchase: { await purchaseManager.purchase() },
+                onRestore:  { await purchaseManager.restore() }
+            )
         }
     }
 
