@@ -61,7 +61,6 @@ struct PaywallView: View {
             }
             dismissButton
         }
-        .preferredColorScheme(.dark)
     }
 
     // MARK: - Background

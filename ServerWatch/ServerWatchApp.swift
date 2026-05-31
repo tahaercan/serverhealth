@@ -78,6 +78,11 @@ struct ServerWatchApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(purchaseManager)
+                // The brand language (icon, paywall, hero glows) is dark-
+                // native; locking the whole app to dark makes every screen
+                // speak that vocabulary instead of swapping idioms between
+                // a dark paywall and a light dashboard.
+                .preferredColorScheme(.dark)
                 .task {
                     // Install the foreground notification delegate so iOS shows
                     // banners even while the app is open.
