@@ -45,7 +45,24 @@ struct ServerStatusWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: ServerStatusProvider()) { entry in
             ServerStatusWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                // Lock the widget to dark so it matches the app's brand
+                // language regardless of the user's system theme. WidgetKit
+                // doesn't honor .preferredColorScheme; the container
+                // background is the supported way to set a fixed surface.
+                .containerBackground(for: .widget) {
+                    ZStack {
+                        Color.widgetBase
+                        LinearGradient(
+                            colors: [
+                                Color.widgetGreen.opacity(0.10),
+                                Color.widgetTeal.opacity(0.06),
+                                .clear
+                            ],
+                            startPoint: .top,
+                            endPoint: .center
+                        )
+                    }
+                }
         }
         .configurationDisplayName("Server Health")
         .description("Glance at your servers — green if everything's OK, red when a rule is triggered.")
@@ -82,13 +99,14 @@ struct ServerStatusWidgetView: View {
                 statusDot(for: focus)
                 Text(focus.name)
                     .font(.callout.weight(.semibold))
+                    .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
 
             Text(focus.host)
                 .font(.caption2.monospaced())
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.6))
                 .lineLimit(1)
 
             Spacer(minLength: 0)
@@ -116,18 +134,18 @@ struct ServerStatusWidgetView: View {
             } else if focus.lastCheckedAt != nil {
                 Label("\(focus.okCount) OK", systemImage: "checkmark.circle.fill")
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.widgetGreen)
                     .lineLimit(1)
             } else {
                 Text("No checks yet")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.6))
             }
 
             if let last = focus.lastCheckedAt {
                 Text(last, style: .relative)
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.white.opacity(0.4))
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -140,13 +158,14 @@ struct ServerStatusWidgetView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("Server Health")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .font(.caption2.weight(.heavy))
+                    .tracking(0.5)
+                    .foregroundStyle(LinearGradient.widgetBrand)
                     .textCase(.uppercase)
                 Spacer()
                 Text(snap.updatedAt, style: .relative)
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.white.opacity(0.4))
             }
 
             // Show up to 3 servers (medium widget is short)
@@ -156,10 +175,11 @@ struct ServerStatusWidgetView: View {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(srv.name)
                             .font(.callout.weight(.medium))
+                            .foregroundStyle(.white)
                             .lineLimit(1)
                         Text(srv.host)
                             .font(.caption2.monospaced())
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white.opacity(0.55))
                             .lineLimit(1)
                     }
                     Spacer()
@@ -170,7 +190,7 @@ struct ServerStatusWidgetView: View {
             if snap.servers.count > 3 {
                 Text("+\(snap.servers.count - 3) more")
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.white.opacity(0.5))
             }
 
             Spacer(minLength: 0)
@@ -185,12 +205,13 @@ struct ServerStatusWidgetView: View {
         VStack(spacing: 6) {
             Image(systemName: "server.rack")
                 .font(.title2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(LinearGradient.widgetBrand)
             Text("No servers yet")
                 .font(.caption.weight(.medium))
+                .foregroundStyle(.white)
             Text("Add a server in the app to see it here.")
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.55))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -221,16 +242,38 @@ struct ServerStatusWidgetView: View {
         } else {
             Image(systemName: "checkmark.circle.fill")
                 .font(.callout)
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.widgetGreen)
         }
     }
 
     private func statusColor(for srv: WidgetSnapshot.ServerSummary) -> Color {
         if srv.hasAlert { return .red }
         if srv.lastError != nil { return .orange }
-        if srv.isHealthy { return .green }
-        return .gray
+        if srv.isHealthy { return Color.widgetGreen }
+        return Color.white.opacity(0.3)
     }
+}
+
+// MARK: - Widget palette (duplicated from main app's Theme.swift because
+// the widget extension can't import from the app target).
+
+private extension Color {
+    /// #0B0F12 — near-black base, matches the app icon and paywall.
+    static let widgetBase  = Color(red: 0.043, green: 0.059, blue: 0.071)
+    /// #3FD68A — primary brand accent for healthy states.
+    static let widgetGreen = Color(red: 0.247, green: 0.839, blue: 0.541)
+    /// #3FD6C6 — secondary brand accent for gradient companion.
+    static let widgetTeal  = Color(red: 0.247, green: 0.839, blue: 0.776)
+}
+
+private extension LinearGradient {
+    /// Standard brand gradient. Reused for the medium widget header and
+    /// the empty-state icon so the widget reads like the app's paywall.
+    static let widgetBrand = LinearGradient(
+        colors: [Color.widgetGreen, Color.widgetTeal],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
 }
 
 #Preview(as: .systemSmall) {
