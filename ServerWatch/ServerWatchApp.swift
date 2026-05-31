@@ -1,8 +1,26 @@
 import SwiftUI
 import SwiftData
+import BackgroundTasks
 
 @main
 struct ServerWatchApp: App {
+
+    init() {
+        // BGProcessingTask is not exposed through SwiftUI's .backgroundTask
+        // modifier (only .appRefresh and .urlSession are). Register the
+        // longer task class the UIKit way; this must happen during launch,
+        // before applicationDidFinishLaunching returns, which App.init
+        // satisfies.
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: BackgroundMonitorTask.processingIdentifier,
+            using: nil
+        ) { task in
+            Task { @MainActor in
+                await BackgroundMonitorTask.run(container: Self.modelContainer)
+                task.setTaskCompleted(success: true)
+            }
+        }
+    }
 
     /// SwiftData container. Uses `ServerHealthMigrationPlan` so future schema
     /// changes can preserve existing user data via lightweight or custom
@@ -80,8 +98,8 @@ struct ServerWatchApp: App {
                 }
         }
         .modelContainer(Self.modelContainer)
-        // Register the BGAppRefreshTask handler. iOS calls this when it
-        // decides to wake the app for a refresh (~15-30 min typical cadence).
+        // BGAppRefreshTask handler — short (~30s), used during day-cadence
+        // wake-ups. SwiftUI's .backgroundTask modifier auto-registers this.
         .backgroundTask(.appRefresh(BackgroundMonitorTask.identifier)) {
             await BackgroundMonitorTask.run(container: Self.modelContainer)
         }

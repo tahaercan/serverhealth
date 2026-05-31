@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var notifStatus: UNAuthorizationStatus = .notDetermined
     @State private var showOnboarding: Bool = false
     @State private var showPaywall: Bool = false
+    @State private var bgDiagnostics: BackgroundDiagnostics.Snapshot = BackgroundDiagnostics.current()
 
     init() {
         _pickedCode = State(initialValue: LanguageManager.shared.override)
@@ -134,6 +135,58 @@ struct SettingsView: View {
             }
 
             Section {
+                HStack(spacing: 12) {
+                    Image(systemName: bgDiagnostics.runCount > 0 ? "arrow.triangle.2.circlepath" : "clock.badge.questionmark")
+                        .font(.title3)
+                        .foregroundStyle(bgDiagnostics.runCount > 0 ? .green : .secondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Automatic checks")
+                            .font(.subheadline.weight(.medium))
+                        if bgDiagnostics.runCount > 0, let last = bgDiagnostics.lastRunAt {
+                            Text("\(bgDiagnostics.runCount) total — last \(last.formatted(.relative(presentation: .numeric)))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("iOS hasn't fired one yet")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                }
+                if let next = bgDiagnostics.lastScheduledAt {
+                    HStack(spacing: 12) {
+                        Image(systemName: "calendar.badge.clock")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Next check requested")
+                                .font(.subheadline.weight(.medium))
+                            Text(next.formatted(.relative(presentation: .numeric)))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                    }
+                }
+                if let err = bgDiagnostics.lastScheduleError {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.title3)
+                            .foregroundStyle(.orange)
+                        Text(err)
+                            .font(.caption.monospaced())
+                            .foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            } header: {
+                Text("Background")
+            } footer: {
+                Text("iOS decides when to run background checks. We schedule them eagerly (every ~10 min minimum) but Apple's system often delays or skips runs to save battery — especially overnight, on cellular, or for apps the user hasn't opened in a while. For guaranteed cadence, a server-side monitor is the right tool.")
+            }
+
+            Section {
                 Button {
                     showOnboarding = true
                 } label: {
@@ -188,6 +241,7 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             notifStatus = await NotificationService.currentStatus()
+            bgDiagnostics = BackgroundDiagnostics.current()
         }
         .sheet(isPresented: $showOnboarding) {
             NavigationStack {

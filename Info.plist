@@ -49,10 +49,12 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>processing</string>
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.serverhealth.monitor</string>
+		<string>com.serverhealth.monitor.processing</string>
 	</array>
 
 	<!-- US export-compliance: we use SSH (standard crypto) which is exempt
