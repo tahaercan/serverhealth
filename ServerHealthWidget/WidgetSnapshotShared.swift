@@ -16,7 +16,6 @@ struct WidgetSnapshot: Codable, Equatable {
     struct ServerSummary: Codable, Equatable, Identifiable {
         var id: String { name }
         let name: String
-        let host: String
         let triggeredCount: Int
         let okCount: Int
         let lastCheckedAt: Date?

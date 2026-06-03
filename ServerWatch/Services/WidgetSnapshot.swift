@@ -10,6 +10,10 @@ import WidgetKit
 /// add/delete). The widget reads it from its TimelineProvider on every reload.
 ///
 /// **⚠️ SECURITY — DO NOT add the following to `ServerSummary`:**
+///   - Server host / IP / port. The widget is visible on the lock screen
+///     and at a glance to anyone holding the phone; exposing reachable
+///     hostnames lowers the bar for an attacker scoping the user's
+///     infrastructure. The user-chosen `name` is what shows publicly.
 ///   - Raw SSH command outputs (`LogEntry.output`)
 ///   - Full error stacks or anything derived from `String(describing: error)`
 ///     on SSH internals — Citadel error descriptions may include credentials.
@@ -19,7 +23,7 @@ import WidgetKit
 ///
 /// The App Group container is sandbox-accessible to forensics tools and to
 /// any other extension we ship under the same group. Fields here should be
-/// **display-ready, low-sensitivity** (server name, host, simple counts,
+/// **display-ready, low-sensitivity** (server name, simple counts,
 /// timestamps, short status text). When in doubt, expose just enough to
 /// render the widget — nothing more.
 ///
@@ -40,7 +44,6 @@ struct WidgetSnapshot: Codable, Equatable {
     struct ServerSummary: Codable, Equatable, Identifiable {
         var id: String { name }
         let name: String
-        let host: String
         /// Number of rules currently above their threshold (triggered) at last check.
         let triggeredCount: Int
         /// Number of rules currently OK at last check.

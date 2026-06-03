@@ -207,7 +207,6 @@ struct MonitoringEngine {
             }.count
             return WidgetSnapshot.ServerSummary(
                 name: server.name,
-                host: server.host,
                 triggeredCount: triggered,
                 okCount: max(0, active.count - triggered),
                 lastCheckedAt: server.lastCheckedAt,

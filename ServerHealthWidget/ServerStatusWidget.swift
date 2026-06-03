@@ -16,7 +16,7 @@ struct ServerStatusProvider: TimelineProvider {
         ServerStatusEntry(
             date: .now,
             snapshot: WidgetSnapshot(updatedAt: .now, servers: [
-                .init(name: "Production", host: "prod.example.com",
+                .init(name: "Production",
                       triggeredCount: 0, okCount: 5,
                       lastCheckedAt: .now, lastError: nil)
             ])
@@ -95,7 +95,7 @@ struct ServerStatusWidgetView: View {
         let focus = snap.servers.first(where: { $0.hasAlert })
                  ?? snap.servers.first!
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 statusDot(for: focus)
                 Text(focus.name)
                     .font(.callout.weight(.semibold))
@@ -104,10 +104,9 @@ struct ServerStatusWidgetView: View {
                     .minimumScaleFactor(0.8)
             }
 
-            Text(focus.host)
-                .font(.caption2.monospaced())
-                .foregroundStyle(.white.opacity(0.6))
-                .lineLimit(1)
+            // Host/IP intentionally NOT shown — the widget renders on the
+            // lock screen and at-a-glance to anyone holding the phone, so
+            // server addresses stay inside the app.
 
             Spacer(minLength: 0)
 
@@ -169,17 +168,18 @@ struct ServerStatusWidgetView: View {
             }
 
             // Show up to 3 servers (medium widget is short)
+            // Host/IP intentionally omitted — addresses stay inside the app.
             ForEach(Array(snap.servers.prefix(3))) { srv in
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     statusDot(for: srv)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(srv.name)
-                            .font(.callout.weight(.medium))
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                        Text(srv.host)
-                            .font(.caption2.monospaced())
-                            .foregroundStyle(.white.opacity(0.55))
+                    Text(srv.name)
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                    if let last = srv.lastCheckedAt {
+                        Text(last, style: .relative)
+                            .font(.caption2)
+                            .foregroundStyle(.white.opacity(0.5))
                             .lineLimit(1)
                     }
                     Spacer()
@@ -290,7 +290,7 @@ private extension LinearGradient {
     ServerStatusEntry(date: .now, snapshot: WidgetSnapshot(
         updatedAt: .now,
         servers: [
-            .init(name: "Staging", host: "stg.example.com",
+            .init(name: "Staging",
                   triggeredCount: 2, okCount: 3,
                   lastCheckedAt: .now, lastError: nil),
         ]
