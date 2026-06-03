@@ -20,6 +20,16 @@ struct ServerWatchApp: App {
                 task.setTaskCompleted(success: true)
             }
         }
+
+        #if DEBUG
+        // Flag-based shortcut so screenshot capture doesn't have to drive
+        // through the onboarding tour. Must happen here (App.init), not
+        // in .task — ContentView reads `hasCompletedOnboarding` synchronously
+        // on first render and would otherwise show onboarding first.
+        if ProcessInfo.processInfo.arguments.contains(where: { $0.hasSuffix("SH_DEMO_MODE") }) {
+            UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        }
+        #endif
     }
 
     /// SwiftData container. Uses `ServerHealthMigrationPlan` so future schema
@@ -100,6 +110,16 @@ struct ServerWatchApp: App {
                     // entitlement so the gating and paywall have data ready
                     // by the time the user might hit them.
                     await purchaseManager.loadProduct()
+                    #if DEBUG
+                    // Pre-populate the store with two demo servers + rules
+                    // when launched with `--SH_DEMO_MODE` so the dashboard
+                    // and detail screens look real for App Store
+                    // screenshot capture.
+                    if DemoDataFixture.isEnabled {
+                        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+                        DemoDataFixture.installIfNeeded(into: Self.modelContainer.mainContext)
+                    }
+                    #endif
                 }
         }
         .modelContainer(Self.modelContainer)

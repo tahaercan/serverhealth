@@ -15,6 +15,9 @@ DerivedData/
 *.ipa
 *.app.dSYM/
 
+# App Store screenshot working dir (uploaded directly to ASC, not part of repo)
+screenshots/
+
 # Swift Package Manager (resolved versions are tracked via Xcode's
 # Package.resolved inside .xcodeproj — local checkouts/build are not)
 .swiftpm/
