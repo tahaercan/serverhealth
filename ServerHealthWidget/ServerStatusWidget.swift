@@ -282,7 +282,7 @@ private extension LinearGradient {
     ServerStatusEntry(date: .now, snapshot: WidgetSnapshot(
         updatedAt: .now,
         servers: [
-            .init(name: "Production", host: "prod.example.com",
+            .init(name: "Production",
                   triggeredCount: 0, okCount: 5,
                   lastCheckedAt: .now, lastError: nil),
         ]
