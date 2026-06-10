@@ -36,13 +36,30 @@ struct ServerListView: View {
                     } description: {
                         Text("Add a server to start monitoring.\nYour password is only used for the initial setup.")
                     } actions: {
-                        Button {
-                            addServerTapped()
-                        } label: {
-                            Label("Add Server", systemImage: "plus")
-                                .font(.body.weight(.semibold))
+                        VStack(spacing: 12) {
+                            Button {
+                                addServerTapped()
+                            } label: {
+                                Label("Add Server", systemImage: "plus")
+                                    .font(.body.weight(.semibold))
+                            }
+                            .buttonStyle(.borderedProminent)
+
+                            // Demo Mode entry — populates the dashboard with
+                            // two pretend servers so anyone (including App
+                            // Store reviewers without their own Linux box)
+                            // can explore the UI end-to-end without doing
+                            // the SSH handshake.
+                            Button {
+                                DemoMode.install(into: context)
+                            } label: {
+                                Label("Or try a demo with sample servers",
+                                      systemImage: "sparkles")
+                                    .font(.footnote.weight(.medium))
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                         }
-                        .buttonStyle(.borderedProminent)
                     }
                 } else {
                     ZStack {

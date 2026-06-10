@@ -290,12 +290,25 @@ struct PaywallView: View {
             }
             .padding(.top, 2)
 
-            Text("Auto-renews yearly until canceled. Cancel anytime in Settings → Apple ID → Subscriptions.")
+            Text("1-year auto-renewable subscription. Renews automatically until canceled. Cancel anytime in Settings → Apple ID → Subscriptions.")
                 .font(.caption2)
                 .foregroundStyle(.white.opacity(0.45))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 8)
                 .padding(.top, 4)
+
+            // Functional links to Privacy Policy + Terms of Use — required
+            // by App Store Review Guideline 3.1.2(c) for any app offering
+            // auto-renewable subscriptions.
+            HStack(spacing: 16) {
+                Link("Privacy Policy",
+                     destination: URL(string: "https://tahaercan.github.io/serverhealth/privacy/")!)
+                Link("Terms of Use",
+                     destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+            }
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(.white.opacity(0.7))
+            .padding(.top, 2)
 
             HStack(spacing: 6) {
                 Image(systemName: "lock.shield.fill")

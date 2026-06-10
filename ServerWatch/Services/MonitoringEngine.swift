@@ -36,6 +36,16 @@ struct MonitoringEngine {
     func evaluate(server: Server, force: Bool = false) async -> [MonitoringEvaluation] {
         var results: [MonitoringEvaluation] = []
 
+        // Demo servers have no Keychain key and no real host. The engine
+        // skips them so they don't surface "Unreachable" errors after the
+        // user activates "Try Demo Mode". Their lastValue / lastTriggeredAt
+        // come from DemoMode's seed data and stay frozen — that's fine for
+        // a static demo.
+        if DemoMode.isDemo(server) {
+            server.lastCheckedAt = Date()
+            return results
+        }
+
         let credentials = server.credentials
         let enabledRules = server.rules.filter { $0.isEnabled }
         let now = Date()
